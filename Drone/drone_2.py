@@ -5,19 +5,22 @@ import numpy as np
 INITIAL_SPEED = 70 # 0-100%
 INITIAL_VALID_HEIGHT = 300 # 0-300 cm
 
+autopilot = False
+
 area_min = 600
-H_min = 52
+H_min = 55
 H_max = 93
 S_min = 92
 S_max = 248
-V_min = 86
+V_min = 0
 V_max = 220
 width = 600
 height = 600
-deadzone = 100
+deadzone = 10
 KP_YAW = 0.5
 KP_PROXIMITY = 0.001
-wished_area = 100000
+KP_HEIGHT = 0.9
+wished_area = 60000
 hsv_min = np.array([H_min, S_min, V_min])
 hsv_max = np.array([H_max, S_max, V_max])
 
@@ -113,6 +116,7 @@ def height_callback(val):
 def main():
 	global trackbar_height
 	global frame_source
+	global autopilot
 	# Create window for the sliders if drone is the frame source
 	if frame_source == 1:
 		global speed, valid_height, drone, counter, fast_changing_input, rc_velocities, cmd_sent, delay_waited
@@ -145,6 +149,9 @@ def main():
 		cv2.line(img, (width//2-deadzone, 0), (width//2-deadzone,height), (255, 255, 0), 2)
 		cv2.line(img, (width//2+deadzone, 0), (width//2+deadzone,height), (255, 255, 0), 2)
 
+		cv2.line(img, (0, height//2-deadzone), (width,height//2-deadzone), (255, 255, 0), 2)
+		cv2.line(img, (0, height//2+deadzone), (width,height//2+deadzone), (255, 255, 0), 2)
+
 		contours, hierarchy = cv2.findContours(copy_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 		center = (width//2,height//2)
 		area = wished_area
@@ -168,14 +175,12 @@ def main():
 		# Things to do if the frame source is the drone
 		if frame_source == 1:
 			if drone.is_flying:
-				error = center[0] - width//2
-				if abs(error) > deadzone:
-					drone.send_rc_control(0, 0, 0, int(-KP_YAW*error))
-				else:
-					error = wished_area - area
-					if abs(error) > 0:	
-						drone.send_rc_control(0, int(KP_PROXIMITY*error), 0, 0)
-
+				if autopilot:
+					error_yaw = center[0] - width//2
+					error_linear = wished_area - area
+					error_height = height//2 - center[1]
+					print(error_linear)
+					drone.send_rc_control(0, int(KP_PROXIMITY*error_linear), int(KP_HEIGHT*error_height), int(KP_YAW*error_yaw))
 			# Debouncing the keyboard input
 			if ord(key) != 255:
 				cmd_sent = True
@@ -223,11 +228,15 @@ def main():
 				drone.end()
 			# If the drone is not flying and t is pressed, the drone will take off
 			elif key == 't' and not drone.is_flying:
-				if drone.get_battery() < 25:
+				if drone.get_battery() < 0:
 					cv2.putText(img, 'Battery LOW, cannot takeoff', (0, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
 				else:
 					drone.send_rc_control(0,0,0,0)
 					drone.takeoff()
+			elif key == 'p':
+				autopilot = True
+			elif key == 'o':
+				autopilot = False
 			# If the drone is flying and l is pressed, the drone will land
 			elif key == 'l' and drone.is_flying:
 				drone.send_rc_control(0,0,0,0)

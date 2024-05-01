@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'challenge4 = mini_challenges.challenge4:main'
+            'challenge4 = mini_challenges.challenge4:main',
+            'color_id = mini_challenges.color_id:main',
         ],
     },
 )

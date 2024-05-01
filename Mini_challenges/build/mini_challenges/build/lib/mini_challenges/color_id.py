@@ -67,6 +67,8 @@ class ColorId(Node):
             
             # Create a copy of the image 
             image=self.cv_img.copy()
+
+            image = cv2.flip(image, 0)
             
             #Once we read the image we need to change the color space to HSV 
             hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV) 

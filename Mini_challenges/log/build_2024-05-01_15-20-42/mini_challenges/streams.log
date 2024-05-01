@@ -1,0 +1,26 @@
+[1.549s] Invoking command in '/home/lpm/Italian-Mafia/Mini_challenges/src/mini_challenges': PYTHONPATH=/home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/prefix_override:/home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/mini_challenges build --build-base /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build install --record /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/install.log --single-version-externally-managed install_data
+[2.104s] running egg_info
+[2.106s] writing ../../build/mini_challenges/mini_challenges.egg-info/PKG-INFO
+[2.106s] writing dependency_links to ../../build/mini_challenges/mini_challenges.egg-info/dependency_links.txt
+[2.107s] writing entry points to ../../build/mini_challenges/mini_challenges.egg-info/entry_points.txt
+[2.107s] writing requirements to ../../build/mini_challenges/mini_challenges.egg-info/requires.txt
+[2.107s] writing top-level names to ../../build/mini_challenges/mini_challenges.egg-info/top_level.txt
+[2.111s] reading manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+[2.112s] adding license file 'LICENSE'
+[2.114s] writing manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+[2.114s] running build
+[2.114s] running build_py
+[2.115s] copying mini_challenges/color_id.py -> /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+[2.116s] running install
+[2.117s] running install_lib
+[2.119s] copying /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges/color_id.py -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+[2.123s] byte-compiling /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges/color_id.py to color_id.cpython-310.pyc
+[2.125s] running install_data
+[2.125s] running install_egg_info
+[2.130s] removing '/home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges-0.0.0-py3.10.egg-info' (and everything under it)
+[2.131s] Copying ../../build/mini_challenges/mini_challenges.egg-info to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges-0.0.0-py3.10.egg-info
+[2.134s] running install_scripts
+[2.171s] Installing challenge4 script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+[2.171s] Installing color_id script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+[2.172s] writing list of installed files to '/home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/install.log'
+[2.214s] Invoked command in '/home/lpm/Italian-Mafia/Mini_challenges/src/mini_challenges' returned '0': PYTHONPATH=/home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/prefix_override:/home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../../build/mini_challenges build --build-base /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build install --record /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/install.log --single-version-externally-managed install_data

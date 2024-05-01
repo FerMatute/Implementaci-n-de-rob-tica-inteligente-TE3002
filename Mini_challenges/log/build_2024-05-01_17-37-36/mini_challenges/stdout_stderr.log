@@ -1,0 +1,28 @@
+running egg_info
+writing ../../build/mini_challenges/mini_challenges.egg-info/PKG-INFO
+writing dependency_links to ../../build/mini_challenges/mini_challenges.egg-info/dependency_links.txt
+writing entry points to ../../build/mini_challenges/mini_challenges.egg-info/entry_points.txt
+writing requirements to ../../build/mini_challenges/mini_challenges.egg-info/requires.txt
+writing top-level names to ../../build/mini_challenges/mini_challenges.egg-info/top_level.txt
+reading manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+running build
+running build_py
+copying mini_challenges/color_id.py -> /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+copying mini_challenges/odometry_node.py -> /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+running install
+running install_lib
+copying /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges/color_id.py -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+copying /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges/odometry_node.py -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+byte-compiling /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges/color_id.py to color_id.cpython-310.pyc
+byte-compiling /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges/odometry_node.py to odometry_node.cpython-310.pyc
+running install_data
+running install_egg_info
+removing '/home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../../build/mini_challenges/mini_challenges.egg-info to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges-0.0.0-py3.10.egg-info
+running install_scripts
+Installing color_id script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+Installing odometry_node script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+Installing path_generator_c4 script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+writing list of installed files to '/home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/install.log'

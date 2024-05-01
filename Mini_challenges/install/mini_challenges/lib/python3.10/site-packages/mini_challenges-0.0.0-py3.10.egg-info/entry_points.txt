@@ -1,4 +1,5 @@
 [console_scripts]
-challenge4 = mini_challenges.challenge4:main
 color_id = mini_challenges.color_id:main
+odometry_node = mini_challenges.odometry_node:main
+path_generator_c4 = mini_challenges.path_generator_c4:main
 

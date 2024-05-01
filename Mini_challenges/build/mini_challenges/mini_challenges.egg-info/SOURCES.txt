@@ -9,9 +9,11 @@ setup.py
 ../../build/mini_challenges/mini_challenges.egg-info/requires.txt
 ../../build/mini_challenges/mini_challenges.egg-info/top_level.txt
 ../../build/mini_challenges/mini_challenges.egg-info/zip-safe
+launch/challenge4_launch.py
 mini_challenges/__init__.py
-mini_challenges/challenge4.py
 mini_challenges/color_id.py
+mini_challenges/odometry_node.py
+mini_challenges/path_generator_c4.py
 resource/mini_challenges
 test/test_copyright.py
 test/test_flake8.py

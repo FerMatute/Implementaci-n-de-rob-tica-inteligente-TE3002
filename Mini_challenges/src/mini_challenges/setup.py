@@ -1,3 +1,5 @@
+import os
+from glob import glob
 from setuptools import find_packages, setup
 
 package_name = 'mini_challenges'
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'),
+         glob(os.path.join('launch', '*launch.[pxy][yma]*'))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,8 +24,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'challenge4 = mini_challenges.challenge4:main',
             'color_id = mini_challenges.color_id:main',
+            'odometry_node = mini_challenges.odometry_node:main',
+            'path_generator_c4 = mini_challenges.path_generator_c4:main',
         ],
     },
 )

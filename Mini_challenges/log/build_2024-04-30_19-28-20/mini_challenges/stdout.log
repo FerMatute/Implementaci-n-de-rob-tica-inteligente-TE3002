@@ -1,0 +1,40 @@
+running egg_info
+creating ../../build/mini_challenges/mini_challenges.egg-info
+writing ../../build/mini_challenges/mini_challenges.egg-info/PKG-INFO
+writing dependency_links to ../../build/mini_challenges/mini_challenges.egg-info/dependency_links.txt
+writing entry points to ../../build/mini_challenges/mini_challenges.egg-info/entry_points.txt
+writing requirements to ../../build/mini_challenges/mini_challenges.egg-info/requires.txt
+writing top-level names to ../../build/mini_challenges/mini_challenges.egg-info/top_level.txt
+writing manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+reading manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../../build/mini_challenges/mini_challenges.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build
+creating /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib
+creating /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+copying mini_challenges/__init__.py -> /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+copying mini_challenges/color_id.py -> /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+copying mini_challenges/challenge4.py -> /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges
+running install
+running install_lib
+creating /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+copying /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges/__init__.py -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+copying /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges/color_id.py -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+copying /home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/build/lib/mini_challenges/challenge4.py -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges
+byte-compiling /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges/color_id.py to color_id.cpython-310.pyc
+byte-compiling /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges/challenge4.py to challenge4.cpython-310.pyc
+running install_data
+creating /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/share/ament_index
+creating /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/share/ament_index/resource_index
+creating /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/share/ament_index/resource_index/packages
+copying resource/mini_challenges -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/share/ament_index/resource_index/packages
+copying package.xml -> /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/share/mini_challenges
+running install_egg_info
+Copying ../../build/mini_challenges/mini_challenges.egg-info to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/python3.10/site-packages/mini_challenges-0.0.0-py3.10.egg-info
+running install_scripts
+Installing challenge4 script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+Installing color_id script to /home/lpm/Italian-Mafia/Mini_challenges/install/mini_challenges/lib/mini_challenges
+writing list of installed files to '/home/lpm/Italian-Mafia/Mini_challenges/build/mini_challenges/install.log'

@@ -25,10 +25,17 @@ class ColorId(Node):
 
         super().__init__('color_identification') 
 
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                ('h', [170,180]),
+            ]
+        )
+
         self.bridge = CvBridge() 
         
         # Subcribers
-        self.sub = self.create_subscription(Image, 'robot/camera1/image_raw', self.camera_callback, 10) 
+        self.sub = self.create_subscription(Image, 'video_source/raw', self.camera_callback, 10) 
         self.vel_sub = self.create_subscription(Twist, 'ctrl_vel',self.getVels, 10) 
 
         # Publishers
@@ -76,18 +83,17 @@ class ColorId(Node):
             #Hsv limits are defined 
         
             # Rojos
-            min_red = np.array([0,20,20])     # Ya detecta rojos :D
-            max_red = np.array([10,255,255])
+            (h_min, h_max) = self.get_parameter('h').get_parameter_value().integer_array_value
+            min_red = np.array([h_min, 20, 20])     # Ya detecta rojos :D
+            max_red = np.array([h_max, 255, 255])
             # Verdes
 
-            min_green = np.array([40,50,50])  # <--- Hay que tunear el verde
+            min_green = np.array([40,10,10])  # <--- Hay que tunear el verde
             max_green = np.array([80,255,255]) 
             # # Amarillos
             min_yellow = np.array([15, 20, 20]) # Ya detecta amarillos :D
             max_yellow = np.array([30, 255, 255])
             
-            self.get_logger().info(f"Yellow: {min_yellow} - {max_yellow}")
-
             #This is the actual color detection  
             mask_r = cv2.inRange(hsv, min_red, max_red)
             mask_v = cv2.inRange(hsv, min_green, max_green)
@@ -106,16 +112,18 @@ class ColorId(Node):
                     # centroid  
                     c_r = max(cnts_r, key = cv2.contourArea)  
                     ((x, y), radius) = cv2.minEnclosingCircle(c_r)
-                    if radius > 10: #10 pixels   
-                        M_r = cv2.moments(c_r)  
-                        center = (int(M_r["m10"] / M_r["m00"]), int(M_r["m01"] / M_r["m00"]))
-                        # only proceed if the radius meets a minimum size  
-                    
-                        # Draw the circle and centroid on the cv_img. 
-                        cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 255), 2)  
-                        cv2.circle(image, center, 5, (0, 0, 255), -1)  
+                    if radius > 70: #10 pixels   
+                        if x > 320 and x < 960 and y > 180 and y < 540:
 
-                        self.color_r = 1
+                            M_r = cv2.moments(c_r)  
+                            center = (int(M_r["m10"] / M_r["m00"]), int(M_r["m01"] / M_r["m00"]))
+                            # only proceed if the radius meets a minimum size  
+                        
+                            # Draw the circle and centroid on the cv_img. 
+                            cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 255), 2)  
+                            cv2.circle(image, center, 5, (0, 0, 255), -1)  
+                            self.get_logger().info('Red')
+                            self.color_r = 1
 
                     else: #If the detected object is too small 
                         radius = 0.0  #Just set the radius of the object to zero
@@ -128,15 +136,18 @@ class ColorId(Node):
                     # centroid  
                     c_y = max(cnts_y, key=cv2.contourArea)  
                     ((x, y), radius) = cv2.minEnclosingCircle(c_y)  
-                    if radius > 10 and self.color_r != 1:
-                        M_y = cv2.moments(c_y)  
-                        center = (int(M_y["m10"] / M_y["m00"]), int(M_y["m01"] / M_y["m00"]))  
-                    
-                    # only proceed if the radius meets a minimum size  
-                        # Draw the circle and centroid on the cv_img. 
-                        cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 255), 2)  
-                        cv2.circle(image, center, 5, (0, 0, 255), -1)  
-                        self.color_y = 1
+                    if radius > 70 and self.color_r != 1:
+                        if x > 320 and x < 960 and y > 180 and y < 540:
+                        
+                            M_y = cv2.moments(c_y)  
+                            center = (int(M_y["m10"] / M_y["m00"]), int(M_y["m01"] / M_y["m00"]))  
+                        
+                        # only proceed if the radius meets a minimum size  
+                            # Draw the circle and centroid on the cv_img. 
+                            cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 255), 2)  
+                            cv2.circle(image, center, 5, (0, 0, 255), -1)  
+                            self.color_y = 1
+                            self.get_logger().info('Yellow')
 
                     else: #If the detected object is too small 
                         self.color_y = 0
@@ -149,15 +160,16 @@ class ColorId(Node):
                     # centroid  
                     c = max(cnts_v, key=cv2.contourArea)  
                     ((x, y), radius) = cv2.minEnclosingCircle(c)  
-                    if radius > 10 and self.color_r != 1 and self.color_y != 1:
-                        
-                        M = cv2.moments(c)  
-                        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))  
-                        # only proceed if the radius meets a minimum size  
-                            # Draw the circle and centroid on the cv_img. 
-                        cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 255), 2)  
-                        cv2.circle(image, center, 5, (0, 0, 255), -1)  
-                        self.color_v = 1
+                    if radius > 70 and self.color_r != 1 and self.color_y != 1:
+                        if x > 320 and x < 960 and y > 180 and y < 540:
+                            M = cv2.moments(c)  
+                            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))  
+                            # only proceed if the radius meets a minimum size  
+                                # Draw the circle and centroid on the cv_img. 
+                            cv2.circle(image, (int(x), int(y)), int(radius), (0, 255, 255), 2)  
+                            cv2.circle(image, center, 5, (0, 0, 255), -1)  
+                            self.color_v = 1
+                            self.get_logger().info('Green')
 
                     else: #If the detected object is too small 
                         radius = 0.0  #Just set the radius of the object to zero
@@ -176,17 +188,17 @@ class ColorId(Node):
             if self.color_r == 1:
                 self.robot_vel.linear.x = 0.0
                 self.robot_vel.angular.z = 0.0
-                self.get_logger().info("Stop")
+                # self.get_logger().info("Stop")
             
             elif self.color_y == 1:
                 self.robot_vel.linear.x = self.l_vel * 0.5
                 self.robot_vel.angular.z = self.w_vel * 0.5
-                self.get_logger().info("Middle speed")
+                # self.get_logger().info("Middle speed")
 
             elif self.color_v == 1:
                 self.robot_vel.linear.x = self.l_vel
                 self.robot_vel.angular.z = self.w_vel
-                self.get_logger().info("Full speed")
+                # self.get_logger().info("Full speed")
 
             self.cmd_vel_pub.publish(self.robot_vel)
             # Publish the radius and center of the detected object

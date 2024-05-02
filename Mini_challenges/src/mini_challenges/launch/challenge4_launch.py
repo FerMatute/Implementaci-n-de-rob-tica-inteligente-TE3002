@@ -11,13 +11,6 @@ def generate_launch_description():
         output='screen'
     )
 
-    path_generator_c4 = Node(
-        package='mini_challenges',
-        executable='path_generator_c4',
-        name='path_generator_c4',
-        output='screen'
-    )
-
     color_id = Node(
         package='mini_challenges',
         executable='color_id',
@@ -26,7 +19,6 @@ def generate_launch_description():
     )
 
     ld.add_action(odometry_node)
-    ld.add_action(path_generator_c4)
     ld.add_action(color_id)
 
     return ld

@@ -2,7 +2,7 @@ from djitellopy import Tello
 import cv2
 
 # Frame source: 0-> from webcam 1-> from drone
-frame_source = 0
+frame_source = 1
 
 # Initializing camera stream
 if frame_source == 0: # Webcam

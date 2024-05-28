@@ -1,10 +1,15 @@
 from djitellopy import Tello
 import cv2
 import numpy as np
+import mediapipe as mp
 
 INITIAL_SPEED = 70 # 0-100%
 INITIAL_VALID_HEIGHT = 300 # 0-300 cm
 
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+
+hands_control = False
 autopilot = False
 
 area_min = 600
@@ -16,7 +21,8 @@ V_min = 0
 V_max = 220
 width = 600
 height = 600
-deadzone = 10
+deadzone = 50
+
 KP_YAW = 0.5
 KP_PROXIMITY = 0.001
 KP_HEIGHT = 0.9
@@ -58,6 +64,20 @@ def vmax_update(val):
 	global V_max
 	V_max = cv2.getTrackbarPos("V max", "Trackbars")
 	update_hsv()
+ 
+# Hand positions
+def is_index_finger_pointing(hand_landmarks):
+	tolerance = .1
+	if hand_landmarks[8].x > hand_landmarks[5].x + tolerance:
+		return "Right"
+	elif hand_landmarks[8].x < hand_landmarks[5].x - tolerance:
+		return "Left"
+	elif hand_landmarks[8].y < hand_landmarks[5].y - tolerance:
+		return "Up"
+	elif hand_landmarks[8].y > hand_landmarks[5].y + tolerance:
+		return "Down"
+	else:
+		return "No Movement"
 
 # Create window for sliders
 cv2.namedWindow("Trackbars")
@@ -102,6 +122,8 @@ elif frame_source == 1:
 	drone.connect()
 	drone.streamoff()
 	drone.streamon()
+	capture = cv2.VideoCapture(0)
+	
 
 # Callback functions to update the speed
 def speed_callback(val):
@@ -126,62 +148,28 @@ def main():
 		trackbar_height += 100
 		cv2.createTrackbar("Height", "Trackbars", 50, 300, height_callback)
 		cv2.setTrackbarPos("Height", "Trackbars", INITIAL_VALID_HEIGHT)
-
+	with mp_hands.Hands(
+            static_image_mode=False,
+            max_num_hands=2,
+            min_detection_confidence=0.25,
+            min_tracking_confidence=0.5) as hands:
+        
 	# Main Loop
-	prev_key = chr(255)
-	while True:
+		prev_key = chr(255)
+		while True:
 		# Obtaining a new frame
-		if frame_source == 0:
-			_, img = capture.read()
-		elif frame_source == 1:
-			frame_read = drone.get_frame_read()
-			img = cv2.cvtColor(frame_read.frame, cv2.COLOR_BGR2RGB)
-
-		# Resizing the chosen image to 500x500
-		img = cv2.resize(img, (width, height))
-		copy_img = img.copy()
-		hsv_img = cv2.cvtColor(copy_img, cv2.COLOR_BGR2HSV)
-		mask = cv2.inRange(hsv_img, hsv_min, hsv_max)
-		copy_img = cv2.bitwise_and(copy_img, copy_img, mask=mask)
-		copy_img = cv2.GaussianBlur(copy_img, (7, 7), 1)
-		copy_img = cv2.cvtColor(copy_img, cv2.COLOR_BGR2GRAY)
-
-		cv2.line(img, (width//2-deadzone, 0), (width//2-deadzone,height), (255, 255, 0), 2)
-		cv2.line(img, (width//2+deadzone, 0), (width//2+deadzone,height), (255, 255, 0), 2)
-
-		cv2.line(img, (0, height//2-deadzone), (width,height//2-deadzone), (255, 255, 0), 2)
-		cv2.line(img, (0, height//2+deadzone), (width,height//2+deadzone), (255, 255, 0), 2)
-
-		contours, hierarchy = cv2.findContours(copy_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-		center = (width//2,height//2)
-		area = wished_area
-		for contour in contours:
-			area = cv2.contourArea(contour)
-			if area > area_min:
-				cv2.drawContours(copy_img, contour, -1, (255, 0, 255), 7)
-				perimeter = cv2.arcLength(contour, True)
-				approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
-				x, y, w, h = cv2.boundingRect(approx)
-				cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 5)
-				center = (x + w // 2, y + h // 2)
-				cv2.circle(img, center, 5, (0, 0, 255), cv2.FILLED)
-
-		cv2.circle(img, (width//2, height//2), 5, (0, 0, 0), cv2.FILLED)
-		cv2.line(img, (width//2, height//2), center, (255, 0, 255), 3)
-
-		# Keyboard monitor
-		key = chr(cv2.waitKey(1) & 0xFF)
-
-		# Things to do if the frame source is the drone
-		if frame_source == 1:
-			if drone.is_flying:
-				if autopilot:
-					error_yaw = center[0] - width//2
-					error_linear = wished_area - area
-					error_height = height//2 - center[1]
-					print(error_linear)
-					drone.send_rc_control(0, int(KP_PROXIMITY*error_linear), int(KP_HEIGHT*error_height), int(KP_YAW*error_yaw))
-			# Debouncing the keyboard input
+			if frame_source == 0:
+				_, img = capture.read()
+			elif frame_source == 1:
+				frame_read = drone.get_frame_read()
+				# Converting the frame to RGB
+				img = cv2.cvtColor(frame_read.frame, cv2.COLOR_BGR2RGB)
+				_,img2 = capture.read()
+			# Resizing the chosen image to 500x500
+			img = cv2.resize(img, (width, height))
+	
+			# Keyboard monitor
+			key = chr(cv2.waitKey(1) & 0xFF)
 			if ord(key) != 255:
 				cmd_sent = True
 				counter = 0
@@ -205,78 +193,157 @@ def main():
 					fast_changing_input = False
 					cmd_sent = False
 					delay_waited = False
-					
-			# Displaying the battery, speed, height and the battery status on the image
-			cv2.putText(img, f'Battery: {drone.get_battery()}', (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
+		
+			## Color Detection
+			copy_img = img.copy()
+			hsv_img = cv2.cvtColor(copy_img, cv2.COLOR_BGR2HSV)
+			mask = cv2.inRange(hsv_img, hsv_min, hsv_max)
+			copy_img = cv2.bitwise_and(copy_img, copy_img, mask=mask)
+			copy_img = cv2.GaussianBlur(copy_img, (7, 7), 1)
+			copy_img = cv2.cvtColor(copy_img, cv2.COLOR_BGR2GRAY)
 
-			cv2.putText(img, f'Speed: {speed}', (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
+			cv2.line(img, (width//2-deadzone, 0), (width//2-deadzone,height), (255, 255, 0), 2)
+			cv2.line(img, (width//2+deadzone, 0), (width//2+deadzone,height), (255, 255, 0), 2)
 
-			if drone.get_battery() < 25 and drone.get_battery() >= 15:
-				cv2.putText(img, 'Low Battery', (0, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 3)
-			elif drone.get_battery() < 15:
-				cv2.putText(img, 'Critical Battery', (0, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
-			else:
-				cv2.putText(img, 'Normal Battery', (0, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
+			cv2.line(img, (0, height//2-deadzone), (width,height//2-deadzone), (255, 255, 0), 2)
+			cv2.line(img, (0, height//2+deadzone), (width,height//2+deadzone), (255, 255, 0), 2)
 
-			cv2.putText(img, f'Height: {drone.get_height()}', (0, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
+			contours, hierarchy = cv2.findContours(copy_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+			center = (width//2,height//2)
+			area = wished_area
+			for contour in contours:
+				area = cv2.contourArea(contour)
+				if area > area_min:
+					cv2.drawContours(copy_img, contour, -1, (255, 0, 255), 7)
+					perimeter = cv2.arcLength(contour, True)
+					approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
+					x, y, w, h = cv2.boundingRect(approx)
+					cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 5)
+					center = (x + w // 2, y + h // 2)
+					cv2.circle(img, center, 5, (0, 0, 255), cv2.FILLED)
+
+			cv2.circle(img, (width//2, height//2), 5, (0, 0, 0), cv2.FILLED)
+			cv2.line(img, (width//2, height//2), center, (255, 0, 255), 3)
+
+			# Keyboard monitor
+			key = chr(cv2.waitKey(1) & 0xFF)
+
+			# Things to do if the frame source is the drone
+			if frame_source == 1:
+				if drone.is_flying:
+					if autopilot:
+						error_yaw = center[0] - width//2
+						error_linear = wished_area - area
+						print(error_linear)
+						drone.send_rc_control(0, int(KP_PROXIMITY*error_linear),0, int(KP_YAW*error_yaw))
+					elif hands:
+						# Getting the hand landmarks
+						mp_hands = mp.solutions.hands
+						hands = mp_hands.Hands()
+						results = hands.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+						if results.multi_hand_landmarks:
+							for hand_landmarks in results.multi_hand_landmarks:
+								# Checking the hand positions
+								is_index_finger_pointing = is_index_finger_pointing(hand_landmarks.landmark)
+								# If the index finger is pointing, the drone will move
+								if is_index_finger_pointing == "Right":
+									rc_velocities = [speed, 0, 0, 0]
+								elif is_index_finger_pointing == "Left":
+									rc_velocities = [-speed, 0, 0, 0]
+								elif is_index_finger_pointing == "Up":
+									# If the drone is higher than the valid height, the drone will go down
+									if drone.get_height() > valid_height:
+										rc_velocities = [0, 0, -speed, 0]
+									else:
+										rc_velocities = [0, speed, 0, 0]
+								elif is_index_finger_pointing == "Down":
+									# If the drone is too low to the ground, the drone will go up
+									if drone.get_height() < 30:
+										rc_velocities = [0, speed, 0, 0]
+									else:
+										rc_velocities = [0, -speed, 0, 0]
+								else:
+									rc_velocities = [0, 0, 0, 0]
+								drone.send_rc_control(*rc_velocities)
+						else:
+							rc_velocities = [0, 0, 0, 0]
+							drone.send_rc_control(*rc_velocities)
+
+				# Displaying the battery, speed, height and the battery status on the image
+				cv2.putText(img, f'Battery: {drone.get_battery()}', (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
+
+				cv2.putText(img, f'Speed: {speed}', (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
+
+				if drone.get_battery() < 25 and drone.get_battery() >= 15:
+					cv2.putText(img, 'Low Battery', (0, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 3)
+				elif drone.get_battery() < 15:
+					cv2.putText(img, 'Critical Battery', (0, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
+				else:
+					cv2.putText(img, 'Normal Battery', (0, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
+
+				cv2.putText(img, f'Height: {drone.get_height()}', (0, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
+				# Display hand gesture recognition
+				cv2.putText(img, f'Index Finger pointing: {is_index_finger_pointing()}', (0, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
 
 			# Ends the drone object when q is pressed or battery is lower than 12%
-			if key == 'q' or drone.get_battery() < 12:
-				drone.send_rc_control(0,0,0,0)
-				drone.land()
-				drone.streamoff()
-				drone.end()
-			# If the drone is not flying and t is pressed, the drone will take off
-			elif key == 't' and not drone.is_flying:
-				if drone.get_battery() < 0:
-					cv2.putText(img, 'Battery LOW, cannot takeoff', (0, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
-				else:
+				if key == 'q' :
 					drone.send_rc_control(0,0,0,0)
-					drone.takeoff()
-			elif key == 'p':
-				autopilot = True
-			elif key == 'o':
-				autopilot = False
-			# If the drone is flying and l is pressed, the drone will land
-			elif key == 'l' and drone.is_flying:
-				drone.send_rc_control(0,0,0,0)
-				drone.land()
-			# If the drone is flying and the keys w,a,s,d,z,x,.,, are pressed, the drone will move
-			elif key in 'wasdzx,.' and drone.is_flying:
-				# Dictionary to decode the key pressed into the drone's velocity
-				decoder_f_b = {'w': speed,
-								's': -speed}
-				decoder_l_r = {'a': -speed,
-								'd': speed}
-				decoder_u_d = {'z': speed, 
-								'x': -speed}
-				decoder_yaw = {',': -speed, 
-								'.': speed}
-				# Assigning the velocities to movement directions
-				forward_backward_velocity = decoder_f_b[key] if key in decoder_f_b else 0
-				left_right_velocity = decoder_l_r[key] if key in decoder_l_r else 0
-				up_down_velocity = decoder_u_d[key] if key in decoder_u_d else 0
-				yaw_velocity = decoder_yaw[key] if key in decoder_yaw else 0
-				rc_velocities = [left_right_velocity, forward_backward_velocity, up_down_velocity, yaw_velocity]
+					drone.land()
+					drone.streamoff()
+					drone.end()
+				elif key == 'R':
+					autopilot = not autopilot
+					hands_control = False
+				elif key == 'H':
+					hands_control = not hands_control
+					autopilot= False
+				# If the drone is not flying and t is pressed, the drone will take off
+				elif key == 't' and not drone.is_flying:
+					if drone.get_battery() < 25:
+						cv2.putText(img, 'Battery LOW, cannot takeoff', (0, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 3)
+					else:
+						drone.send_rc_control(0,0,0,0)
+						drone.takeoff()
+				# If the drone is flying and l is pressed, the drone will land
+				elif key == 'l' and drone.is_flying:
+					drone.send_rc_control(0,0,0,0)
+					drone.land()
+				# If the drone is flying and the keys w,a,s,d,z,x,.,, are pressed, the drone will move
+				elif key in 'wasdzx,.' and drone.is_flying:
+					# Dictionary to decode the key pressed into the drone's velocity
+					decoder_f_b = {'w': speed,
+									's': -speed}
+					decoder_l_r = {'a': -speed,
+									'd': speed}
+					decoder_u_d = {'z': speed, 
+									'x': -speed}
+					decoder_yaw = {',': -speed, 
+									'.': speed}
+					# Assigning the velocities to movement directions
+					forward_backward_velocity = decoder_f_b[key] if key in decoder_f_b else 0
+					left_right_velocity = decoder_l_r[key] if key in decoder_l_r else 0
+					up_down_velocity = decoder_u_d[key] if key in decoder_u_d else 0
+					yaw_velocity = decoder_yaw[key] if key in decoder_yaw else 0
+					rc_velocities = [left_right_velocity, forward_backward_velocity, up_down_velocity, yaw_velocity]
 
-			if drone.get_height() > valid_height:
-				rc_velocities[2] = -speed
+				if drone.get_height() > valid_height:
+					rc_velocities[2] = -speed
 
-			# Sending corresponding drone cmmand once to avoid network bottleneck
-			if key != prev_key:
-				if ord(key) == 255:
-					rc_velocities = [0, 0, 0, 0]
-				drone.send_rc_control(*rc_velocities)
+				# Sending corresponding drone cmmand once to avoid network bottleneck
+				if key != prev_key:
+					if ord(key) == 255:
+						rc_velocities = [0, 0, 0, 0]
+					drone.send_rc_control(*rc_velocities)
 
-		# Showing the image in a window
-		cv2.imshow("Trackbars", img)
-		
-		# Breaking the loop if 'q' is pressed
-		if key == 'q':
-			cv2.destroyAllWindows()
-			break
+			# Showing the image in a window
+			cv2.imshow("Image", img)
+			
+			# Breaking the loop if 'q' is pressed
+			if key == 'q':
+				cv2.destroyAllWindows()
+				break
 
-		prev_key = key
+			prev_key = key
 
 # Try-except block to catch KeyboardInterrupt exception and safely land the drone if the frame source is the drone
 try:

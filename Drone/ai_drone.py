@@ -79,8 +79,7 @@ def is_index_finger_pointing(hand_landmarks):
             return "Up"
         elif hand_landmarks[8].y > hand_landmarks[5].y + tolerance:
             return "Down"
-        else:
-            return "No Movement"
+
     elif frame_source==1 :
         if hand_landmarks[8].x > hand_landmarks[5].x + tolerance:
             drone.send_rc_control(speed, 0, 0, 0)
@@ -94,8 +93,7 @@ def is_index_finger_pointing(hand_landmarks):
         elif hand_landmarks[8].y > hand_landmarks[5].y + tolerance:
             drone.send_rc_control(0, -speed, 0, 0)
             return "Down"
-        drone.send_rc_control(0,0,0,0)
-        return "No Movement"
+
         
 
 
@@ -146,8 +144,14 @@ def main():
                 for hand_landmarks in results.multi_hand_landmarks:
                     # drwing landmarks and connections
                     mp_drawing.draw_landmarks(img2, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                    cv2.putText(img2, "Index Finger pointing: " + is_index_finger_pointing(hand_landmarks.landmark), (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                    try:
+                        cv2.putText(img2, "Index Finger pointing: " + is_index_finger_pointing(hand_landmarks.landmark), (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                                     cv2.LINE_AA)
+                    except:
+                        cv2.putText(img2, "Index Finger pointing: No Hands" , (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                                    cv2.LINE_AA)
+                        drone.send_rc_control(0, 0, 0, 0)
+                        
                 cv2.putText(img, f'Battery: {drone.get_battery()}', (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
                 cv2.putText(img, f'Speed: {speed}', (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                 if drone.get_battery() < 25 and drone.get_battery() >= 15:

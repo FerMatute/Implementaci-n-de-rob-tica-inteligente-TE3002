@@ -64,12 +64,19 @@ w = 500
 def is_thumb_up(landmarks):
     thumb_tip = landmarks[mp_hands.HandLandmark.THUMB_TIP].y
     thumb_ip = landmarks[mp_hands.HandLandmark.THUMB_IP].y
-    if frame_source == 1:
-        drone.send_rc_control(0,0,0,speed)
-    return thumb_tip < thumb_ip
+    indexState = is_index_finger_pointing(landmarks)
+    if thumb_tip < thumb_ip and indexState != "no movement":
+        if frame_source == 1:
+            drone.send_rc_control(0, 0, 0, speed)   
+        return "Thumb Up"
+    if thumb_ip < thumb_tip and indexState != "no movement":
+        if frame_source == 1:
+            drone.send_rc_control(0, 0, 0, -speed)
+        return "Thumb Down"
+    
 
 def is_index_finger_pointing(hand_landmarks):
-    tolerance = .5
+    tolerance = .1
     if frame_source== 0:
         if hand_landmarks[8].x > hand_landmarks[5].x + tolerance:
             return "Right"
@@ -79,6 +86,8 @@ def is_index_finger_pointing(hand_landmarks):
             return "Up"
         elif hand_landmarks[8].y > hand_landmarks[5].y + tolerance:
             return "Down"
+        else:
+            return "No Movement"
 
     elif frame_source==1 :
         if hand_landmarks[8].x > hand_landmarks[5].x + tolerance:
@@ -93,6 +102,8 @@ def is_index_finger_pointing(hand_landmarks):
         elif hand_landmarks[8].y > hand_landmarks[5].y + tolerance:
             drone.send_rc_control(0, -speed, 0, 0)
             return "Down"
+        else:
+            return "No Movement"
 
         
 
@@ -144,14 +155,19 @@ def main():
                 for hand_landmarks in results.multi_hand_landmarks:
                     # drwing landmarks and connections
                     mp_drawing.draw_landmarks(img2, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                    try:
-                        cv2.putText(img2, "Index Finger pointing: " + is_index_finger_pointing(hand_landmarks.landmark), (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+
+                    cv2.putText(img2, "Index Finger pointing: " + is_index_finger_pointing(hand_landmarks.landmark), (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                                     cv2.LINE_AA)
-                    except:
-                        cv2.putText(img2, "Index Finger pointing: No Hands" , (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
+                    
+                    cv2.putText(img2, "Thumb Up: " + is_thumb_up(hand_landmarks.landmark), (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,
                                     cv2.LINE_AA)
-                        drone.send_rc_control(0, 0, 0, 0)
-                        
+            else:
+                cv2.putText(img2, "No Hands", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2,
+                            cv2.LINE_AA)
+                if frame_source == 1:
+                    drone.send_rc_control(0, 0, 0, 0)
+            
+            if frame_source == 1:        
                 cv2.putText(img, f'Battery: {drone.get_battery()}', (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (185,79,249), 3)
                 cv2.putText(img, f'Speed: {speed}', (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                 if drone.get_battery() < 25 and drone.get_battery() >= 15:
